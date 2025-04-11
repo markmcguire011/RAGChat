@@ -11,6 +11,7 @@ from app.llm.prompt import prompt_manager
 from app.retrieval.retriever import DocumentRetriever
 from app.database.vector_store import VectorStore
 from langchain_core.documents import Document
+from langchain_chroma import Chroma
 
 logger = logging.getLogger(__name__)
 
@@ -69,10 +70,19 @@ class WiLineBot:
             # default chat prompt
             self.prompt_id = "chat_with_context" if self.retriever else "default_chat"
             
+            # Register chat_with_context template if using retrieval
+            if self.retriever and "chat_with_context" not in prompt_manager.templates:
+                prompt_manager.register_chat_template(
+                    "chat_with_context",
+                    system_message="You are a helpful assistant. Use the following context to answer the user's question.",
+                    human_message="Context:\n{context}\n\nQuestion: {query}"
+                )
+            
             # default chat prompt if not using retrieval
             if not self.retriever and "default_chat" not in prompt_manager.templates:
                 prompt_manager.register_chat_template(
                     "default_chat",
+                    system_message="You are a helpful assistant.",
                     human_message="{query}"
                 )
         
@@ -160,12 +170,15 @@ class WiLineBot:
             context = self.format_context(retrieved_docs)
             logger.debug(f"Retrieved context: {context[:100]}...")
         
+        # Prepare input variables based on the prompt template
         input_vars = {"query": query}
-        if context:
+        
+        # Only add context if we have it and the prompt template expects it
+        if context and "context" in prompt_manager.get_template(self.prompt_id).input_variables:
             input_vars["context"] = context
         
         # chat history if provided
-        if chat_history:
+        if chat_history and "chat_history" in prompt_manager.get_template(self.prompt_id).input_variables:
             formatted_history = self._format_chat_history(chat_history)
             input_vars["chat_history"] = formatted_history
         
@@ -258,19 +271,33 @@ class WiLineBot:
         Returns:
             Initialized ChatBot instance
         """
-
-        from langchain.vectorstores import Chroma
+        # wrapper for embedding function
+        class EmbeddingWrapper:
+            def __init__(self, embedding_function):
+                self.embedding_function = embedding_function
+                
+            def embed_query(self, text):
+                return self.embedding_function([text])[0]
+                
+            def embed_documents(self, documents):
+                return self.embedding_function(documents)
+        
+        if not hasattr(vector_store.chroma_client.embedding_function, 'embed_query'):
+            wrapped_embeddings = EmbeddingWrapper(vector_store.chroma_client.embedding_function)
+        else:
+            wrapped_embeddings = vector_store.chroma_client.embedding_function
         
         # VectorStore to a langchain VectorStore
         langchain_vector_store = Chroma(
             client=vector_store.chroma_client.client,
             collection_name=vector_store.collection_name,
-            embedding_function=embedding_model
+            embedding_function=wrapped_embeddings
         )
         
         retriever = DocumentRetriever(
             vector_store=langchain_vector_store,
-            embeddings=embedding_model
+            embeddings=wrapped_embeddings,  # wrapped embeddings
+            score_threshold=None 
         )
         
         return cls(
@@ -279,4 +306,4 @@ class WiLineBot:
             **kwargs
         )
 
-default_bot = WiLineBot(model_id="default", provider="huggingface", model_name="google/flan-t5-base")
+default_bot = WiLineBot(model_id="default", provider="huggingface", model_name="gpt2")

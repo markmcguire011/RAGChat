@@ -167,7 +167,7 @@ class PromptManager:
         template = self.get_template(template_id)
         return template.format(**kwargs)
 
-# Common prompt templates
+# templates
 QA_TEMPLATE = """
 Context information is below:
 ---------------------
@@ -197,25 +197,84 @@ Context:
 ---------------------
 """
 
-# Global prompt manager instance
 prompt_manager = PromptManager()
 
-# Register default templates
-prompt_manager.register_template(
-    "qa",
-    QA_TEMPLATE,
-    input_variables=["context", "question"]
-)
+def initialize_default_templates(manager: PromptManager = prompt_manager):
+    """
+    Initialize the prompt manager with default templates.
+    
+    Args:
+        manager: The prompt manager instance to initialize
+        
+    Returns:
+        The initialized prompt manager
+    """
+    # register templates
+    manager.register_template(
+        "qa",
+        QA_TEMPLATE,
+        input_variables=["context", "question"]
+    )
 
-prompt_manager.register_template(
-    "summarize",
-    SUMMARIZATION_TEMPLATE,
-    input_variables=["text"]
-)
+    manager.register_template(
+        "summarize",
+        SUMMARIZATION_TEMPLATE,
+        input_variables=["text"]
+    )
 
-prompt_manager.register_chat_template(
-    "chat_with_context",
-    system_message=CHAT_WITH_CONTEXT_TEMPLATE,
-    human_message="{query}",
-    input_variables=["context", "query"]
-)
+    manager.register_chat_template(
+        "chat_with_context",
+        system_message=CHAT_WITH_CONTEXT_TEMPLATE,
+        human_message="{query}",
+        input_variables=["context", "query"]
+    )
+    
+    return manager
+
+initialize_default_templates()
+
+# convenience functions
+def get_qa_chain(llm, parser_id: str = "str"):
+    """
+    Get a question-answering chain using the default QA template.
+    
+    Args:
+        llm: The language model to use
+        parser_id: The parser ID to use
+        
+    Returns:
+        A chain for question answering
+    """
+    template = prompt_manager.get_template("qa")
+    parser = prompt_manager.get_parser(parser_id)
+    return template | llm | parser
+
+def get_summarization_chain(llm, parser_id: str = "str"):
+    """
+    Get a summarization chain using the default summarization template.
+    
+    Args:
+        llm: The language model to use
+        parser_id: The parser ID to use
+        
+    Returns:
+        A chain for summarization
+    """
+    template = prompt_manager.get_template("summarize")
+    parser = prompt_manager.get_parser(parser_id)
+    return template | llm | parser
+
+def get_chat_with_context_chain(llm, parser_id: str = "str"):
+    """
+    Get a chat chain with context using the default chat with context template.
+    
+    Args:
+        llm: The language model to use
+        parser_id: The parser ID to use
+        
+    Returns:
+        A chain for chat with context
+    """
+    template = prompt_manager.get_template("chat_with_context")
+    parser = prompt_manager.get_parser(parser_id)
+    return template | llm | parser

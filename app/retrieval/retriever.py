@@ -4,6 +4,7 @@ from langchain_core.retrievers import BaseRetriever
 from langchain.vectorstores import VectorStore
 from langchain.embeddings.base import Embeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
 import logging
 
 from app.config import (
@@ -45,7 +46,10 @@ class DocumentRetriever:
     def _create_retriever(self) -> BaseRetriever:
         """Create a retriever from the vector store."""
         search_kwargs = {"k": self.k}
-        if self.score_threshold is not None:
+        
+        # Only add score_threshold if it's supported by the vector store
+        # Chroma doesn't support score_threshold in the query
+        if self.score_threshold is not None and not isinstance(self.vector_store, Chroma):
             search_kwargs["score_threshold"] = self.score_threshold
             
         return self.vector_store.as_retriever(
@@ -53,24 +57,28 @@ class DocumentRetriever:
             search_kwargs=search_kwargs
         )
     
-    def retrieve(self, query: str) -> List[Document]:
+    def retrieve(self, query: str, top_k: int = None) -> List[Document]:
         """
-        Retrieve relevant documents based on the query.
+        Retrieve relevant documents for a query.
         
         Args:
-            query: The search query
+            query: The query string
+            top_k: Number of documents to retrieve (uses default if None)
             
         Returns:
-            List of retrieved documents
+            List of relevant documents
         """
-        logger.info(f"Retrieving documents for query: {query}")
         try:
-            documents = self.retriever.get_relevant_documents(query)
-            logger.info(f"Retrieved {len(documents)} documents")
+            documents = self.retriever.invoke(
+                query,
+                {"k": top_k} if top_k else None
+            )
+            
+            logger.info(f"Retrieved {len(documents)} documents for query")
             return documents
         except Exception as e:
             logger.error(f"Error retrieving documents: {str(e)}")
-            raise
+            return []
     
     def retrieve_with_scores(self, query: str) -> List[tuple[Document, float]]:
         """
