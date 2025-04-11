@@ -46,7 +46,41 @@ rag-chatbot/
 └── .gitignore     
 ```
 
+## Adding Your Own Documents
+
+Place your documents in the `data/raw/` directory. The system supports:
+- Text files (.txt)
+- PDF files (.pdf)
+- Markdown files (.md)
+- HTML files (.html)
+
 ## Running the Application
+
+### Setting Up a Virtual Environment
+
+Create virtual environment.
+
+```bash
+python -m venv venv
+```
+
+Activate virtual environment.
+
+```bash
+source venv/bin/activate
+```
+
+### Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Setup .env
+
+```
+OPENAI_API_KEY=your_openai_api_key
+```
 
 ### Vector Store Demo
 
