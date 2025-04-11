@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+.env
+
+# ChromaDB and vector store data
+data/embeddings/
+*.sqlite
+*.sqlite3
+*.db
+
+# Model files and caches
+*.bin
+*.pt
+*.pth
+*.onnx
+*.h5
+.cache/
+.vector_cache/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+*.ipynb
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Local configuration
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Test coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+
+# API keys and secrets
+.env
+
+# Temporary files
+tmp/
+temp/
+
+# Generated files
+generated/
+
+# Raw and processed data
+# data/raw/
+# data/processed/
