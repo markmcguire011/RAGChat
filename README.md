@@ -3,7 +3,6 @@
 A Retrieval-Augmented Generation (RAG) chatbot that uses ChromaDB for vector storage and LangChain for LLM integration.
 
 ## Project Structure
-
 ```
 rag-chatbot/
 │
@@ -17,16 +16,9 @@ rag-chatbot/
 │   │   ├── chroma_client.py
 │   │   └── vector_store.py 
 │   │
-│   ├── ingestion/ 
-│   │   ├── __init__.py
-│   │   ├── loader.py 
-│   │   ├── processor.py 
-│   │   └── indexer.py  
-│   │
 │   ├── retrieval/    
 │   │   ├── __init__.py
-│   │   ├── retriever.py  
-│   │   └── ranker.py    
+│   │   └── retriever.py   
 │   │
 │   ├── llm/     
 │   │   ├── __init__.py
@@ -35,7 +27,6 @@ rag-chatbot/
 │   │
 │   └── chat/         
 │       ├── __init__.py
-│       ├── history.py 
 │       └── bot.py      
 │
 ├── data/             
@@ -43,30 +34,51 @@ rag-chatbot/
 │   ├── processed/      
 │   └── embeddings/        
 │
-├── api/                
-│   ├── __init__.py
-│   ├── routes.py        
-│   └── middleware.py    
-│
-├── ui/                
-│   ├── web/           
-│   │   ├── static/
-│   │   └── templates/
-│   └── cli/              
-│       └── commands.py
 │
 ├── tests/           
 │   ├── __init__.py
-│   ├── test_ingestion.py
 │   ├── test_retrieval.py
-│   └── test_chat.py
-│
-├── scripts/                
-│   ├── ingest_docs.py     
-│   └── evaluate.py           
+│   └── test_chat.py       
 │
 ├── requirements.txt         
 ├── .env
 ├── README.md        
 └── .gitignore     
+```
+
+## Running the Application
+
+### Vector Store Demo
+
+To test the vector store functionality and see how documents are retrieved:
+
+```bash
+python -m app.main --demo
+```
+
+This will:
+- Load sample documents from the `data/raw/` directory
+- Run test queries against the vector store
+- Display the retrieved documents and their relevance scores
+
+### Interactive Chat
+
+To start an interactive chat session with the RAG chatbot:
+
+```bash
+python -m app.main --chat
+```
+
+This will:
+- Initialize the vector store with your documents
+- Start an interactive command-line chat interface
+- Retrieve relevant documents for each query
+- Generate responses based on the retrieved context
+
+### Help
+
+To see all available options:
+
+```bash
+python -m app.main --help
 ```

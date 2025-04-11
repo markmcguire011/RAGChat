@@ -1,14 +1,16 @@
 import os
 import logging
 from pathlib import Path
+import argparse
 
-from config import (
+from app.config import (
     RAW_DATA_DIR, DEFAULT_EMBEDDING_FUNCTION, 
     DEFAULT_COLLECTION_NAME, DEFAULT_NUM_RESULTS,
     LOG_FORMAT, LOG_LEVEL
 )
-from database.chroma_client import ChromaClient
-from database.vector_store import VectorStore
+from app.database.chroma_client import ChromaClient
+from app.database.vector_store import VectorStore
+from app.chat.bot import WiLineBot
 
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL),
@@ -109,8 +111,8 @@ def run_test_queries(vector_store):
             print(f"   Preview: {doc_preview}")
             print()
 
-def main():
-    """Main function to demonstrate the vector store functionality."""
+def setup_vector_store():
+    """Set up and return the vector store."""
     logger.info("Initializing ChromaDB client...")
     chroma_client = ChromaClient(
         embedding_function_name=DEFAULT_EMBEDDING_FUNCTION
@@ -130,9 +132,82 @@ def main():
         num_loaded = load_sample_documents(vector_store)
         logger.info(f"Loaded {num_loaded} sample documents")
     
-    run_test_queries(vector_store)
+    return vector_store
+
+def setup_chatbot(vector_store):
+    """Set up and return the chatbot with the vector store."""
+    embedding_model = None
     
-    logger.info("Demo done")
+    return WiLineBot.from_vector_store(
+        vector_store=vector_store,
+        embedding_model=embedding_model,
+        model_id="retrieval_bot",
+        temperature=0.7
+    )
+
+def interactive_chat(chatbot):
+    """Run an interactive chat session with the chatbot."""
+    print("\n🤖 Welcome to the RAG Chatbot!")
+    print("Type 'exit', 'quit', or 'q' to end the conversation.\n")
+    
+    chat_history = []
+    
+    while True:
+        user_input = input("You: ")
+        
+        # exit commands
+        if user_input.lower() in ['exit', 'quit', 'q']:
+            print("🤖 Goodbye! Have a great day!")
+            break
+        
+        # gen response
+        response = chatbot.generate_response(
+            query=user_input,
+            chat_history=chat_history
+        )
+        
+        print("\n🤖:", response["answer"])
+        
+        # sources if available
+        if response.get("sources") and len(response["sources"]) > 0:
+            print("\nSources:")
+            for i, source in enumerate(response["sources"]):
+                if source.get("metadata"):
+                    print(f"  {i+1}. {source['metadata'].get('title', 'Unknown')}")
+                    print(f"     Source: {source['metadata'].get('source', 'Unknown')}")
+                else:
+                    preview = source['content'][:100] + "..." if len(source['content']) > 100 else source['content']
+                    print(f"  {i+1}. {preview}")
+        
+        print()
+        
+        # update chat history
+        chat_history.append({"role": "user", "content": user_input})
+        chat_history.append({"role": "assistant", "content": response["answer"]})
+
+def main():
+    """Main function to run the application."""
+    parser = argparse.ArgumentParser(description="WiLine RAG Chatbot with ChromaDB and LangChain")
+    parser.add_argument("--demo", action="store_true", help="Run the vector store demo")
+    parser.add_argument("--chat", action="store_true", help="Start interactive chat")
+    
+    args = parser.parse_args()
+    
+    vector_store = setup_vector_store()
+    
+    if args.demo:
+        # run the vector store demo
+        run_test_queries(vector_store)
+        logger.info("Demo completed")
+    elif args.chat:
+        # set up chatbot and run interactive chat
+        chatbot = setup_chatbot(vector_store)
+        interactive_chat(chatbot)
+    else:
+        # default behavior: show help
+        parser.print_help()
+    
+    logger.info("Application terminated")
 
 if __name__ == "__main__":
     main()
