@@ -2,6 +2,9 @@ import os
 import logging
 from pathlib import Path
 import argparse
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from app.config import (
     RAW_DATA_DIR, DEFAULT_EMBEDDING_FUNCTION, 
@@ -186,7 +189,6 @@ def interactive_chat(chatbot):
         chat_history.append({"role": "assistant", "content": response["answer"]})
 
 def main():
-    """Main function to run the application."""
     parser = argparse.ArgumentParser(description="WiLine RAG Chatbot with ChromaDB and LangChain")
     parser.add_argument("--demo", action="store_true", help="Run the vector store demo")
     parser.add_argument("--chat", action="store_true", help="Start interactive chat")
@@ -196,15 +198,15 @@ def main():
     vector_store = setup_vector_store()
     
     if args.demo:
-        # run the vector store demo
+        # demo
         run_test_queries(vector_store)
         logger.info("Demo completed")
     elif args.chat:
-        # set up chatbot and run interactive chat
+        # chat
         chatbot = setup_chatbot(vector_store)
         interactive_chat(chatbot)
     else:
-        # default behavior: show help
+        # default: show help
         parser.print_help()
     
     logger.info("Application terminated")

@@ -58,7 +58,8 @@ class VectorStore:
                 name=self.collection_name,
                 embedding_function=self.chroma_client.embedding_function
             )
-        except chromadb.errors.NotFoundError:
+        except chromadb.errors.InvalidCollectionException:
+            # collection doesn't exist, create it
             return self.chroma_client.client.create_collection(
                 name=self.collection_name,
                 embedding_function=self.chroma_client.embedding_function
