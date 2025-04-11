@@ -8,7 +8,7 @@ import logging
 from typing import Optional, List, Dict, Any
 import chromadb
 
-from config import (
+from app.config import (
     DEFAULT_COLLECTION_NAME, DEFAULT_EMBEDDING_FUNCTION,
     EMBEDDINGS_DIR, DEFAULT_NUM_RESULTS
 )

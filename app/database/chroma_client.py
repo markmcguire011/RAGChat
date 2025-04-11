@@ -9,7 +9,7 @@ from chromadb.config import Settings
 from chromadb.utils import embedding_functions
 import logging
 
-from config import (
+from app.config import (
     EMBEDDINGS_DIR, DEFAULT_EMBEDDING_FUNCTION
 )
 

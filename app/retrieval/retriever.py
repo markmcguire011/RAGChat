@@ -6,7 +6,7 @@ from langchain.embeddings.base import Embeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import logging
 
-from config import (
+from app.config import (
     DEFAULT_NUM_RESULTS, SIMILARITY_THRESHOLD, EMBEDDINGS_DIR
 )
 
