@@ -4,7 +4,7 @@ A Retrieval-Augmented Generation (RAG) chatbot that uses ChromaDB for vector sto
 
 ## Project Structure
 ```
-rag-chatbot/
+RAGChat/
 │
 ├── app/                      
 │   ├── __init__.py
